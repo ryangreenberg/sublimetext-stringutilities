@@ -25,6 +25,27 @@ if sys.hexversion >= 0x3000000:
         return chr(c)
 
 
+class ConvertSelection(sublime_plugin.TextCommand):
+    """Abstract class to implement a command that modifies the current text
+    select. Subclasses must implement the convert method which accepts the
+    selected text and returns a replacement value."""
+
+    def run(self, edit):
+        for region in self.view.sel():
+            if not region.empty():
+                text = self.view.substr(region).encode(self.enc())
+                self.view.replace(edit, region, self.convert(text))
+
+    def enc(self):
+        if self.view.encoding() == 'Undefined':
+            return self.view.settings().get('default_encoding', 'UTF-8')
+        else:
+            return self.view.encoding()
+
+    def convert(self, text):
+        raise NotImplementedError("Subclass must implement convert")
+
+
 class ConvertTabsToSpacesCommand(sublime_plugin.TextCommand):
     #Convert Tabs To Spaces
     def run(self, edit):
